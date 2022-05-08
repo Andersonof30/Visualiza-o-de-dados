@@ -3,10 +3,10 @@ title: "Universidade Aberta do Brasil"
 subtitle: "Relatório parcial - MATE56"
 author: "Anderson Fonseca"
 output:
-  github_document:
   prettydoc::html_pretty:
     theme: architect
     highlight: github
+    
 ---
 
 ```{r setup, include=FALSE}
