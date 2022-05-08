@@ -1,8 +1,9 @@
 ---
 title: "Universidade Aberta do Brasil"
-subtitle: "Relatório parcial - Matcds"
+subtitle: "Relatório parcial - MATE56"
 author: "Anderson Fonseca"
 output:
+  github_document:
   prettydoc::html_pretty:
     theme: architect
     highlight: github
@@ -20,8 +21,7 @@ dados = read.csv(cam, sep = ' ')
 require(tidyverse)
 ```
 
-
-Universidade Aberta do Brasil é um programa para universalizar o ensino superior no país. Com aulas online é possível levar para um maior número de cidades e em lugares mais remotos, além de ser mais acessível para as pessoas que trabalham. Com tamanha importância é de interesse público ter algumas informações a respeito do programa, como: Quantas cidades são atendidas? Qual tipo de curso é mais oferecido? Existe diferença dos tipos de curso oferecido em cada região? Quais são os estados em que mais pessoas se formam? Qual o percentual de desistência? Entre outras questões. Para tentar responde-las utilizarei uma base de dados com 6666 observações sobre a UAB nos anos de 2017, 2018, 2019 e 2020, obtido em: https://dados.gov.br/dataset/2017-a-2020-programa-universidade-aberta-do-brasil-uab1
+Universidade Aberta do Brasil (UAB) é um programa para universalizar o ensino superior no país. Com aulas online é possível levar para um maior número de cidades e em lugares mais remotos, além de ser mais acessível para as pessoas que trabalham. Com tamanha importância é de interesse público ter algumas informações a respeito do programa, como: Quantas cidades são atendidas? Qual tipo de curso é mais oferecido? Existe diferença dos tipos de cursos oferecidos em cada região? Quais são os estados em que mais pessoas se formam? Qual o percentual de desistência? Entre outras questões. Para tentar responde-las utilizarei uma base de dados com 6666 observações sobre a UAB nos anos de 2017, 2018, 2019 e 2020, obtido em: https://dados.gov.br/dataset/2017-a-2020-programa-universidade-aberta-do-brasil-uab1
 
 
 ```{r, render=F, results=F}
@@ -185,7 +185,7 @@ ggplot(tb, aes(fill = reorder(DS_TIPO_CURSO, Freq), y = reorder(NM_REGIAO, -Freq
   jcolors::scale_color_jcolors(palette = "pal3")
 ```
 
-Na Figura 5 é possível observar que os tipos de cursos apresentam frequências diferentes a depender da região. Nas regiões Norte e Nordeste os cursos de licenciaturas são os predominantes, enquanto nas demais regiões são os cursos de especialização. Os cursos de aperfeçoamento só teve na região Nordeste. 
+Na Figura 5 é possível observar que os tipos de cursos apresentam frequências diferentes a depender da região. Nas regiões Norte e Nordeste os cursos de licenciaturas são os predominantes, enquanto nas demais regiões são os cursos de especialização. Os cursos de aperfeiçoamento só tiveram na região Nordeste. 
 
 
 
@@ -206,8 +206,7 @@ tb3 = as.data.frame(round(tb3/rowSums(tb3),2 ))
     
 ```
 
-Os cursos de Licenciatura e Especialização tinham o mesmo percentual de estudantes em 2017 (44\%), mas os percentual de estudantes nos cursos de licenciatura aumentaram enquanto os de especialição reduziram, tendo a maior diferença em 2020, com 54\% e 39\%. 
-
+Os cursos de Licenciatura e Especialização tinham o mesmo percentual de estudantes em 2017 (44\%), mas o percentual de estudantes nos cursos de licenciatura aumentou enquanto os de especialização reduziram, tendo a maior diferença em 2020, com 54\% e 39\%. 
 
 ```{r, fig.width= 10, fig.cap = "**Figura 7:** Quantidade de municípios com curso abertos em cada ano por região"}
 dados |> group_by(NM_REGIAO, AN_INICIO_OFERTA) |>
