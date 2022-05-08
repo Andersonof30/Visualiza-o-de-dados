@@ -1,0 +1,325 @@
+---
+title: "Universidade Aberta do Brasil"
+subtitle: "Relatório parcial - Matcds"
+author: "Anderson Fonseca"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
+```
+
+# Introdução
+
+```{r}
+cam = "D:/semestre 6/Visualização de dados/dados UAB.csv"
+dados = read.csv(cam, sep = ' ')
+require(tidyverse)
+```
+
+
+Universidade Aberta do Brasil é um programa para universalizar o ensino superior no país. Com aulas online é possível levar para um maior número de cidades e em lugares mais remotos, além de ser mais acessível para as pessoas que trabalham. Com tamanha importância é de interesse público ter algumas informações a respeito do programa, como: Quantas cidades são atendidas? Qual tipo de curso é mais oferecido? Existe diferença dos tipos de curso oferecido em cada região? Quais são os estados em que mais pessoas se formam? Qual o percentual de desistência? Entre outras questões. Para tentar responde-las utilizarei uma base de dados com 6666 observações sobre a UAB nos anos de 2017, 2018, 2019 e 2020, obtido em: https://dados.gov.br/dataset/2017-a-2020-programa-universidade-aberta-do-brasil-uab1
+
+
+```{r, render=F, results=F}
+dados |> select(NM_MUNICIPIO_POLO) |>
+     unique() |> dim()
+
+dados |> select(COD_UF) |>
+     unique() |> dim()
+```
+
+Segundo este conjunto de dados, a UAB atendeu 853 municípios nos 26 estados e o Distrito Federal nos 4 anos citados. 
+
+# Resultados
+
+
+```{r, fig.width= 12, fig.cap='**Figura 1:** Percentual de estudantes cursando a UAB por região'}
+dados |> group_by(NM_REGIAO) |>
+     summarise(soma = sum(QT_CURSANDO, na.rm = T) )|> as.data.frame() |>
+  ggplot(aes(y = reorder(NM_REGIAO, soma), x = soma/sum(soma)) ) +
+  geom_bar(stat='identity', fill = '#FFAF46', color = 'white', width = 0.85) +
+  scale_x_continuous( limits = c(0, .55))+
+  geom_text(aes(label = scales::percent(soma/sum(soma))),
+              hjust = -0.2,
+            vjust = 1/3, size = 05) +
+  labs(y = '', x = '', 
+  title = 'Percentual de estudantes cursando UAB por região') +
+   theme_classic(base_size = 20) +
+ theme(
+    axis.title.x = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank()
+    )  
+
+```
+
+
+A região com número de estudante é a Nordeste com praticamente o dobro da segunda maior, a Sudeste. Seguidas das regiões Sul, Centro-Oeste e Norte, estas 3 somadas tem menos estudantes na UAB que a região Nordeste.
+
+```{r, render=F, results=F}
+dados |> group_by(NM_REGIAO) |> select(NM_MUNICIPIO_POLO) |> 
+     unique() |> dim() 
+
+dados |> select(COD_UF) |>
+     unique() |> count()
+```
+
+
+```{r, fig.width= 10, fig.cap= '**Figura 2:** Quantidade de municipios com cursos da UAB por região'}
+dados |>  group_by(NM_REGIAO) |> 
+  select(NM_MUNICIPIO_POLO) |> unique() |> count() |> as.data.frame() |>
+  ggplot(aes(y = reorder(NM_REGIAO, n), x = n) ) +
+  geom_bar(stat='identity', fill = '#B98CE1', color = 'white', width = 0.85) +
+  scale_x_continuous( limits = c(0, 280))+
+  geom_text(aes(label = n),
+              hjust = -0.2,
+            vjust = 1/3, size = 05) +
+  labs(y = '', x = '', 
+  title = 'Quantidade de municipios por região') +
+   theme_classic(base_size = 20) +
+ theme(
+    axis.title.x = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank()
+    )  
+
+```
+
+A região com maior número de municípios atendidos pela UAB é a região Nordeste, com 264, seguidos da Sudeste, Sul, Centro-oeste e Norte.
+
+
+```{r, fig.width= 10, fig.cap= '**Figura 3:** Percentual de cursos com oferta ativa na UAB por região'}
+dados |> filter(NM_SITUACAO_OFERTA == 'Ativa') |>
+  group_by(NM_REGIAO) |> select(NM_CURSO)|> count()|> as.data.frame() |>
+  ggplot(aes(y = reorder(NM_REGIAO, n), x = n/sum(n)) ) +
+  geom_bar(stat='identity', fill = 'green', color = 'white', width = 0.85) +
+  scale_x_continuous( limits = c(0, .55))+
+  geom_text(aes(label = scales::percent(n/sum(n))),
+              hjust = -0.2,
+            vjust = 1/3, size = 05) +
+  labs(y = '', x = '', 
+  title = 'Percentual de cursos com oferta ativa na UAB por região') +
+   theme_classic(base_size = 20) +
+ theme(
+    axis.title.x = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank()
+    )  
+
+```
+
+
+A região nordeste também lidera o ranking de percentual de cursos ativos, com aproximadamente 40\%, mais que as regiões Sul, Centro-oeste e Norte somadas. E em segundo lugar está a região Sudeste. 
+
+```{r, fig.width= 10, fig.cap= '**Figura 4:** Percentual do tipo de curso na UAB'}
+dados |> select(DS_TIPO_CURSO) |>
+     table() |> as.data.frame() |>
+  ggplot(aes(x = reorder(DS_TIPO_CURSO, Freq), y = Freq/sum(Freq)) ) +
+  geom_bar(stat='identity', fill = 'skyblue', color = 'white', width = 0.85) +
+   coord_flip() +
+  scale_y_continuous( limits = c(0, .55))+
+  scale_x_discrete(labels = c("Aperfeiçoamento", "Tecnológico",
+  "Bacharelado", "Especialização", "Licenciatura")) + 
+
+  geom_text(aes(label = scales::percent(Freq/sum(Freq))),
+              hjust = -0.2,
+            vjust = 1/3, size = 05) +
+  labs(y = 'Percentual', x = 'Tipo de curso', 
+  title = 'Percentual do tipo de curso na UAB') +
+   theme_classic(base_size = 20) +
+ theme(
+    axis.title.x = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    #axis.title.y = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank()
+    )  
+
+```
+
+O curso mais comum é de Licenciatura com a aproximadamente 47\%, seguido de Especialização com 42\%, portanto 89\% dos cursos da UAB são de Licenciatura ou Especialização. Os menos cursados são os cursos de Aperfeiçoamento.
+
+
+```{r, fig.width= 10, fig.cap= "**Figura 5:** Percentual do tipo de curso dividido por região"}
+tb = dados |> group_by(NM_REGIAO) |>
+  select(DS_TIPO_CURSO) |>
+     table() 
+
+tb = as.data.frame(round(tb/rowSums(tb),2 ))
+  
+ggplot(tb, aes(fill = reorder(DS_TIPO_CURSO, Freq), y = reorder(NM_REGIAO, -Freq), x = Freq)) + 
+  geom_bar(stat='identity', color = 'white', width = .85) +
+   scale_fill_discrete("Tipo de curso",labels = c("Aperfeiçoamento", "Tecnológico",
+  "Bacharelado", "Especialização", "Licenciatura")) + 
+  scale_x_continuous(position = "top", labels = scales::percent) +
+    theme_classic(base_size = 20) +
+ theme(
+    #axis.title.x = element_blank(),
+    #axis.line.x = element_blank(),
+    #axis.ticks.x = element_blank(),
+    #axis.text.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    #legend.position = 'top'
+    ) + 
+  labs(title = "Percentual do tipo de curso dividido por região", x = '' ) +
+  jcolors::scale_color_jcolors(palette = "pal3")
+```
+
+Na Figura 5 é possível observar que os tipos de cursos apresentam frequências diferentes a depender da região. Nas regiões Norte e Nordeste os cursos de licenciaturas são os predominantes, enquanto nas demais regiões são os cursos de especialização. Os cursos de aperfeçoamento só teve na região Nordeste. 
+
+
+
+```{r, fig.width= 10, fig.cap= "**Figura 6:** Proporção de estudantes por tipo de curso em cada ano"}
+tb3 = dados |> group_by(DS_TIPO_CURSO, AN_INICIO_OFERTA) |> 
+  select(DS_TIPO_CURSO) |> table()
+
+tb3 = as.data.frame(round(tb3/rowSums(tb3),2 ))
+
+
+  ggplot(data = tb3, aes(y = Freq, x = AN_INICIO_OFERTA, colour = reorder(DS_TIPO_CURSO, -Freq), group = DS_TIPO_CURSO)) +
+  geom_line(size = 1.2) + geom_point() +
+  ggthemes::theme_economist(base_size = 18) +
+  scale_colour_discrete('Tipo de curso', labels = c("Licenciatura", "Especialização",
+  "Bacharelado", "Tecnológico", " Aperfeiçoamento")) +
+    labs(title = "Proporção de estudantes por tipo de curso em cada ano", x = "Ano",y =  "Percentual", size = 18) +
+    scale_y_continuous(labels = scales::percent, limits = c(0, .6), breaks = seq(0, .6, .15)) 
+    
+```
+
+Os cursos de Licenciatura e Especialização tinham o mesmo percentual de estudantes em 2017 (44\%), mas os percentual de estudantes nos cursos de licenciatura aumentaram enquanto os de especialição reduziram, tendo a maior diferença em 2020, com 54\% e 39\%. 
+
+
+```{r, fig.width= 10, fig.cap = "**Figura 7:** Quantidade de municípios com curso abertos em cada ano por região"}
+dados |> group_by(NM_REGIAO, AN_INICIO_OFERTA) |>
+summarise(length(unique(NM_MUNICIPIO_POLO))) |>
+ggplot( aes(x = AN_INICIO_OFERTA, y = `length(unique(NM_MUNICIPIO_POLO))`, colour = NM_REGIAO)) +
+  geom_line(size = 1.2) + geom_point() +
+  labs(title = "Quantidade de municípios com curso abertos em cada ano por região", x = 'Ano', y = 'Quantidade de cursos', size = 18 ) +
+  ggthemes::theme_economist(base_size = 18) +
+  
+  scale_colour_discrete('Região')
+
+```
+
+
+
+Houve uma queda no número de municípios ofertando novos cursos em 2018 e 2019, mas em 2020 voltou a um patamar próximo ao de 2017. A região Nordeste perdeu o primeiro lugar em 2018 mas retornou em 2020. 
+
+
+```{r, render= F}
+
+ds = dados |> group_by(COD_UF) |>
+  summarise(desv = sum(QT_DESVINCULADO, na.rm = T))
+
+fd = dados |> group_by(COD_UF) |>
+  summarise(formado = sum(QT_FORMADO, na.rm = T))
+  
+tcc = dados |> group_by(COD_UF) |>
+  summarise(desv = sum(QT_RETIDO_TCC, na.rm = T))
+
+qtc = dados |> group_by(COD_UF) |>
+  summarise(desv = sum(QT_CADASTRADOS, na.rm = T))
+
+```
+
+
+```{r, fig.width= 10, fig.cap = "**Figura 8:** Percentual de cursos para formação\nde professores por região"}
+tb.pf = dados |> group_by(NM_REGIAO) |>
+  select(ST_FORMACAO_PROFESSORES) |>
+     table()
+tb.pf = as.data.frame(round(tb.pf/rowSums(tb.pf),2 ))
+
+ggplot(tb.pf, aes(fill = reorder(ST_FORMACAO_PROFESSORES , Freq), y = reorder(NM_REGIAO, Freq, diff), x = Freq))  +
+  geom_bar(stat='identity', color = 'white')  +
+   scale_fill_discrete("Curso para formação de  professor?",labels = c("Não", "Sim")) + 
+  scale_x_continuous(labels = scales::percent) +
+    theme_classic(base_size = 20) +
+ theme(
+    axis.title.x = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    legend.position = "top"
+    ) + 
+  labs(title = "Percentual de cursos para formação\nde professores por região", x =
+         'percentual' ) +
+  geom_text(aes(label = scales::percent( 1 - Freq, 1L)),
+              hjust = -1/3,
+            vjust = 1/2, size = 06) 
+
+```
+
+
+Os cursos para formação de professores são maiorias em todas as regiões. A região Norte lidera o ranking, com 83\% dos cursos da região sendo para formar professores. Enquanto na região Sul esse percentual é de 72\%. Mostrando uma diferença entre as regiões. 
+
+```{r, render=F}
+tb.pfe = dados |> group_by(COD_UF) |>
+  select(ST_FORMACAO_PROFESSORES) |>
+     table() 
+
+tb.pfe = as.data.frame(round(tb.pfe/rowSums(tb.pfe),2 ))
+
+
+#Máximo de 100% e mínimo 41 na proporção de cursos para formação de #professores. 
+
+```
+
+```{r, fig.width= 10, fig.cap= "**Figura 9:** Percentual de cursos com mais formados\ndo que desvinculados por região"}
+
+tb4 = dados |> group_by(NM_REGIAO) |> summarise(QT_FORMADO > QT_DESVINCULADO) |> table()
+
+tb4 = as.data.frame(round(tb4/rowSums(tb4), 2))
+
+ggplot(tb4, aes(x = Freq, y = reorder(NM_REGIAO, Freq, diff), fill = reorder(QT_FORMADO...QT_DESVINCULADO, -Freq))) +
+  geom_bar(stat = 'identity', color = 'white') +
+    scale_fill_discrete("Quantidade de formados maior\n que a de desvinculados?",labels = c("Não", "Sim")) + 
+  scale_x_continuous(labels = scales::percent) +
+    theme_classic(base_size = 20) +
+ theme(
+    axis.title.x = element_blank(),
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    legend.position = "top"
+    ) + 
+  labs(title = "Percentual de cursos com mais formados\ndo que desvinculados por região" ) +
+  geom_text(aes(label = scales::percent(Freq, 1L)),
+              hjust = 1.5,
+            vjust = 1/2, size = 06) 
+```
+
+Em 39\% dos cursos da região Sul teve mais estudantes se formados do que desvinculados (desistência oficial do curso), esse é o maior percentual, seguido da região Centro-Oeste com 33\%, em último lugar aparece a região Norte com 22\%. Mais uma evidência da discrepância entre as regiões.
+
+# Conclusão 
+
+
+A Universidade Aberta do Brasil tem papel fundamental na sociedade brasileira, tornando mais fácil atingir o nível superior. E este relatório trouxe a luz algumas informações importantes a respeito do programa, explorando as diferenças entre as regiões e deixa como trabalho futuro a construção de um *dashboard* com os principais gráficos e presença de mapas interativos para visualizar o comportamento de algumas variáveis de acordo com as unidades federativas da união. 
+
+
+
